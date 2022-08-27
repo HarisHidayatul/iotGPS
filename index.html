@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.14.1/build/ol.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.14.1/css/ol.css">
+
+  <title>Document</title>
+</head>
+<body>
+  <!--Library ini menggunakan open layer-->
+  <div id="map" class="map" style="width: 100%;height: 500px";></div>
+  <label>lattitude</label>
+  <input >
+  <label>longtitude</label>
+  <input>
+  <button>Process</button>
+  </br>
+  <label>sdaf</label>
+  <script>
+    var latt = '';
+	var lngg = '';
+    $.ajax({ type: "GET",   
+         	url: "http://harishidayatulloh.my.id/iot/gps/getLng.php?id=1",   
+         	async: false,
+         	success : function(text)
+         	{
+             	lngg = text;
+         	}
+		});
+		$.ajax({ type: "GET",   
+         	url: "http://harishidayatulloh.my.id/iot/gps/getLat.php?id=1",   
+         	async: false,
+         	success : function(text)
+         	{
+             	latt = text;
+         	}
+		});
+    var map = new ol.Map({
+      target: 'map',
+      layers: [
+        new ol.layer.Tile({
+          source: new ol.source.OSM()
+        })
+      ],
+      view: new ol.View({
+        center: ol.proj.fromLonLat([lngg,latt]),
+        zoom: 15
+      })
+    });
+    
+  		var feature = new ol.Feature({
+      		geometry: new ol.geom.Point(ol.proj.transform([lngg, latt], 'EPSG:4326',     
+      		'EPSG:3857'))
+    	})
+    	var vectorSource = new ol.source.Vector({
+      	features: [feature]
+    	})
+    	var vectorLayer = new ol.layer.Vector({
+      		source: vectorSource,
+    	})
+    	map.addLayer(vectorLayer);
+  		// call this function again in 500ms
+    
+    function updateClock() {
+    	map.removeLayer(vectorLayer);
+    	$.ajax({ type: "GET",   
+         	url: "http://harishidayatulloh.my.id/iot/gps/getLng.php?id=1",   
+         	async: false,
+         	success : function(text)
+         	{
+             	lngg = text;
+         	}
+		});
+		$.ajax({ type: "GET",   
+         	url: "http://harishidayatulloh.my.id/iot/gps/getLat.php?id=1",   
+         	async: false,
+         	success : function(text)
+         	{
+             	latt = text;
+         	}
+		});
+  		var feature = new ol.Feature({
+      		geometry: new ol.geom.Point(ol.proj.transform([lngg, latt], 'EPSG:4326',     
+      		'EPSG:3857'))
+    	})
+    	vectorSource = new ol.source.Vector({
+      	features: [feature]
+    	})
+    	vectorLayer = new ol.layer.Vector({
+      		source: vectorSource,
+    	})
+    	map.addLayer(vectorLayer);
+  		// call this function again in 500ms
+    	setTimeout(updateClock, 500);
+	}
+	updateClock(); // initial call
+    
+    
+
+  </script>
+</body>
+</html>
